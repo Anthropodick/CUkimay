@@ -2,12 +2,19 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
+
+<!-- PWA meta -->
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#2563eb" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
 <title>CBT WebView</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; overflow: hidden; background: #000; }
-  #app { display: flex; flex-direction: column; height: 100vh; width: 100vw; }
 
   /* ============ LOGIN ============ */
   #loginPage {
@@ -16,132 +23,175 @@
     background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
     padding: 20px;
   }
-  .login-card { background: #fff; border-radius: 16px; padding: 30px 24px; width: 100%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+  .login-card {
+    background: #fff; border-radius: 16px; padding: 30px 24px;
+    width: 100%; max-width: 400px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
   .login-card h1 { font-size: 22px; color: #1e3a8a; text-align: center; margin-bottom: 6px; }
   .login-card p { text-align: center; color: #64748b; font-size: 13px; margin-bottom: 24px; }
   .login-card label { font-size: 13px; color: #334155; font-weight: 600; display: block; margin-bottom: 8px; }
-  .login-card input { width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; outline: none; }
+  .login-card input {
+    width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0;
+    border-radius: 10px; font-size: 14px; outline: none;
+  }
   .login-card input:focus { border-color: #2563eb; }
-  .login-card button { width: 100%; margin-top: 18px; padding: 14px; background: linear-gradient(90deg, #2563eb, #7c3aed); border: none; border-radius: 10px; color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .login-card button {
+    width: 100%; margin-top: 18px; padding: 14px;
+    background: linear-gradient(90deg, #2563eb, #7c3aed);
+    border: none; border-radius: 10px; color: #fff;
+    font-size: 15px; font-weight: 700; cursor: pointer;
+  }
 
   /* ============ MAIN ============ */
   #main { display: none; flex-direction: column; height: 100%; }
   #main.active { display: flex; }
 
-  /* Top bar hitam */
-  .top-bar { background: #000; color: #fff; display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; font-size: 14px; flex-shrink: 0; }
-  .vip-info { display: flex; align-items: center; gap: 6px; font-weight: 600; }
-  .vip-badge { background: #f59e0b; color: #fff; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; }
-  .hd-btn { background: #374151; color: #fff; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; border: none; cursor: pointer; }
-
-  /* EBC bar biru */
-  .ebc-bar { background: #2563eb; color: #fff; display: flex; align-items: center; justify-content: space-between; padding: 6px 14px; font-size: 13px; flex-shrink: 0; }
-  .ebc-version { font-weight: 700; }
+  /* --- EBC bar (status HP) --- */
+  .ebc-bar {
+    background: #2563eb; color: #fff;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 7px 14px; font-size: 13px; flex-shrink: 0;
+  }
+  .ebc-version { font-weight: 700; letter-spacing: 0.3px; }
   .ebc-status { display: flex; align-items: center; gap: 12px; font-variant-numeric: tabular-nums; }
   .ebc-clock { font-weight: 600; }
   .ebc-batt { display: flex; align-items: center; gap: 5px; font-weight: 600; }
-  .batt-icon { position: relative; width: 22px; height: 11px; border: 2px solid #fff; border-radius: 2px; padding: 1px; display: flex; align-items: center; }
-  .batt-icon::after { content: ''; position: absolute; right: -4px; top: 1.5px; width: 2px; height: 5px; background: #fff; border-radius: 0 2px 2px 0; }
+  .batt-icon {
+    position: relative; width: 22px; height: 11px;
+    border: 2px solid #fff; border-radius: 2px; padding: 1px;
+    display: flex; align-items: center;
+  }
+  .batt-icon::after {
+    content: ''; position: absolute;
+    right: -4px; top: 1.5px; width: 2px; height: 5px;
+    background: #fff; border-radius: 0 2px 2px 0;
+  }
   .batt-fill { height: 100%; border-radius: 1px; transition: width 0.5s ease, background 0.5s ease; }
-  .bolt-icon { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 10px; height: 10px; display: none; }
+  .bolt-icon {
+    position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px; height: 10px;
+    display: none;
+  }
   .bolt-icon.show { display: block; }
 
-  /* URL bar */
-  .url-bar { background: #fff; padding: 8px 12px; border-bottom: 1px solid #e2e8f0; flex-shrink: 0; position: relative; }
-  .url-wrap { display: flex; align-items: center; gap: 8px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 22px; padding: 7px 14px; transition: border-color 0.2s; }
-  .url-wrap:focus-within { border-color: #2563eb; background: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+  /* --- URL bar --- */
+  .url-bar {
+    background: #fff; padding: 8px 12px;
+    border-bottom: 1px solid #e2e8f0;
+    flex-shrink: 0; position: relative;
+  }
+  .url-wrap {
+    display: flex; align-items: center; gap: 8px;
+    background: #f1f5f9; border: 1px solid #e2e8f0;
+    border-radius: 22px; padding: 7px 14px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .url-wrap:focus-within {
+    border-color: #2563eb; background: #fff;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+  }
   .url-wrap .sec-icon { width: 14px; height: 14px; flex-shrink: 0; fill: #64748b; }
-  .url-wrap input { flex: 1; border: none; outline: none; background: transparent; font-size: 13px; color: #0f172a; min-width: 0; }
+  .url-wrap input {
+    flex: 1; border: none; outline: none; background: transparent;
+    font-size: 13px; color: #0f172a; min-width: 0;
+  }
   .url-wrap input::placeholder { color: #94a3b8; }
   .url-go { background: none; border: none; cursor: pointer; padding: 2px; display: flex; align-items: center; }
   .url-go svg { width: 18px; height: 18px; fill: #2563eb; }
   .search-mode .sec-icon { fill: #2563eb; }
 
-  /* Nav bar putih */
-  .nav-bar { background: #f8fafc; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-bottom: 1px solid #e2e8f0; flex-shrink: 0; }
-  .nav-home { width: 38px; height: 38px; border-radius: 8px; background: #e2e8f0; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .nav-home svg { width: 20px; height: 20px; fill: #2563eb; }
-  .nav-avatar { width: 38px; height: 38px; border-radius: 50%; background: #2563eb; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 14px; }
-  .nav-title { flex: 1; min-width: 0; }
-  .nav-title .t1 { font-size: 12px; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .nav-title .t2 { font-size: 11px; color: #64748b; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .btn-selesai { background: #2563eb; color: #fff; padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 700; border: none; cursor: pointer; flex-shrink: 0; }
+  .search-suggest {
+    position: absolute; left: 12px; right: 12px;
+    top: 100%; margin-top: 4px;
+    background: #fff; border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    border: 1px solid #e2e8f0;
+    z-index: 50; overflow: hidden; display: none;
+  }
+  .search-suggest.show { display: block; }
+  .sugg-item {
+    padding: 12px 14px; cursor: pointer;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: #0f172a;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .sugg-item:last-child { border-bottom: none; }
+  .sugg-item:hover { background: #f8fafc; }
+  .sugg-item svg { width: 16px; height: 16px; fill: #64748b; flex-shrink: 0; }
 
+  /* --- Nav bar (judul + selesai) --- */
+  .nav-bar {
+    background: #f8fafc; color: #0f172a;
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-bottom: 1px solid #e2e8f0;
+    flex-shrink: 0;
+  }
+  .nav-home {
+    width: 38px; height: 38px; border-radius: 8px;
+    background: #e2e8f0; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .nav-home svg { width: 20px; height: 20px; fill: #2563eb; }
+  .nav-avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: #2563eb; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 14px;
+  }
+  .nav-title { flex: 1; min-width: 0; }
+  .nav-title .t1 {
+    font-size: 12px; font-weight: 700; color: #0f172a;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .nav-title .t2 {
+    font-size: 11px; color: #64748b; font-weight: 500;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .btn-selesai {
+    background: #2563eb; color: #fff;
+    padding: 8px 18px; border-radius: 20px;
+    font-size: 13px; font-weight: 700; border: none;
+    cursor: pointer; flex-shrink: 0;
+  }
+
+  /* --- Webview --- */
   .webview-area { flex: 1; position: relative; background: #fff; overflow: hidden; }
   #webview { width: 100%; height: 100%; border: none; background: #fff; display: block; }
 
-  .floating { position: absolute; bottom: 16px; width: 42px; height: 42px; border-radius: 10px; background: #10b981; color: #fff; border: none; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.25); cursor: pointer; z-index: 10; }
+  .floating {
+    position: absolute; bottom: 16px;
+    width: 42px; height: 42px; border-radius: 10px;
+    background: #10b981; color: #fff; border: none;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    cursor: pointer; z-index: 10;
+  }
   .floating.left { left: 12px; background: #059669; }
   .floating.right { right: 12px; background: #e2e8f0; color: #0f172a; }
   .floating svg { width: 20px; height: 20px; }
 
-  .bottom-nav { background: #f1f5f9; border-top: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: space-around; padding: 10px 0; flex-shrink: 0; }
-  .bottom-nav button { background: none; border: none; cursor: pointer; padding: 6px 20px; display: flex; align-items: center; justify-content: center; }
+  /* --- Bottom nav --- */
+  .bottom-nav {
+    background: #f1f5f9; border-top: 1px solid #cbd5e1;
+    display: flex; align-items: center; justify-content: space-around;
+    padding: 10px 0; flex-shrink: 0;
+  }
+  .bottom-nav button {
+    background: none; border: none; cursor: pointer;
+    padding: 6px 20px;
+    display: flex; align-items: center; justify-content: center;
+  }
   .bottom-nav button:disabled { opacity: 0.3; cursor: not-allowed; }
   .bottom-nav svg { width: 22px; height: 22px; fill: #475569; }
 
-  /* === Toggle class untuk sembunyikan bar === */
-  body.hide-urlbar .url-bar { display: none !important; }
-  body.hide-statusbar .ebc-bar { display: none !important; }
-  body.hide-topbar .top-bar { display: none !important; }
-
-  /* === FULLSCREEN MODE: sembunyikan SEMUA bar, cuma webview === */
-  body.immersive .top-bar,
-  body.immersive .ebc-bar,
-  body.immersive .url-bar,
-  body.immersive .nav-bar,
-  body.immersive .bottom-nav,
-  body.immersive .floating {
-    display: none !important;
+  /* ============ MENU ============ */
+  #menuOverlay {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(0,0,0,0.5);
+    opacity: 0; pointer-events: none; transition: opacity 0.3s;
   }
-  body.immersive .webview-area {
-    /* Sisakan ruang tipis di tepi untuk "peek" menu */
-    position: relative;
-  }
-
-  /* === Peek handle saat immersive: swipe untuk munculin toolbar === */
-  #peekHandle {
-    position: fixed;
-    top: 0; left: 50%;
-    transform: translateX(-50%);
-    width: 80px; height: 18px;
-    background: rgba(0,0,0,0.35);
-    border-radius: 0 0 12px 12px;
-    z-index: 9999;
-    cursor: pointer;
-    display: none;
-    align-items: center;
-    justify-content: center;
-  }
-  #peekHandle::after {
-    content: '';
-    width: 30px; height: 3px;
-    background: rgba(255,255,255,0.7);
-    border-radius: 2px;
-  }
-  body.immersive #peekHandle { display: flex; }
-
-  /* === FAB muncul saat immersive (kembali ke toolbar) === */
-  #immersiveExit {
-    position: fixed;
-    bottom: 16px; right: 16px;
-    width: 44px; height: 44px;
-    border-radius: 50%;
-    background: rgba(15,23,42,0.7);
-    backdrop-filter: blur(8px);
-    color: #fff;
-    border: 1px solid rgba(255,255,255,0.2);
-    display: none;
-    align-items: center; justify-content: center;
-    z-index: 9999;
-    cursor: pointer;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-  }
-  #immersiveExit svg { width: 20px; height: 20px; fill: #fff; }
-  body.immersive #immersiveExit { display: flex; }
-
-  /* ============ MENU (bottom sheet) ============ */
-  #menuOverlay { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.5); opacity: 0; pointer-events: none; transition: opacity 0.3s; }
   #menuOverlay.show { opacity: 1; pointer-events: auto; }
   #menuSheet {
     position: fixed; left: 0; right: 0; bottom: 0;
@@ -157,7 +207,6 @@
   .sheet-body { padding: 8px 20px 24px; overflow-y: auto; flex: 1; }
   .sheet-title { font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 14px; padding-top: 4px; }
 
-  /* Menu list */
   .menu-list { display: flex; flex-direction: column; gap: 4px; }
   .menu-item {
     display: flex; align-items: center; gap: 14px;
@@ -177,33 +226,23 @@
   .menu-item .label .t { font-size: 14px; font-weight: 600; color: #0f172a; }
   .menu-item .label .s { font-size: 11px; color: #64748b; margin-top: 2px; }
 
-  /* Toggle switch */
   .switch {
-    position: relative;
-    width: 42px; height: 24px;
-    background: #cbd5e1;
-    border-radius: 12px;
-    flex-shrink: 0;
+    position: relative; width: 42px; height: 24px;
+    background: #cbd5e1; border-radius: 12px; flex-shrink: 0;
     transition: background 0.2s;
   }
   .switch.on { background: #2563eb; }
   .switch::after {
-    content: '';
-    position: absolute;
-    left: 3px; top: 3px;
-    width: 18px; height: 18px;
-    background: #fff; border-radius: 50%;
-    transition: transform 0.2s;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    content: ''; position: absolute; left: 3px; top: 3px;
+    width: 18px; height: 18px; background: #fff; border-radius: 50%;
+    transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
   }
   .switch.on::after { transform: translateX(18px); }
-
   .menu-divider { height: 1px; background: #e2e8f0; margin: 8px 0; }
 
   /* Stats panel */
   .stats-panel { display: none; }
   .stats-panel.show { display: block; }
-
   .duration-box { background: #f1f5f9; border-radius: 14px; padding: 20px 16px; text-align: center; margin-bottom: 16px; }
   .duration-label { font-size: 14px; color: #334155; font-weight: 500; margin-bottom: 8px; }
   .duration-value { font-size: 34px; font-weight: 800; color: #3b47ff; letter-spacing: 1px; font-variant-numeric: tabular-nums; }
@@ -214,9 +253,9 @@
   .stat-icon svg { width: 18px; height: 18px; fill: #2563eb; }
   .stat-check { width: 18px; height: 18px; border-radius: 50%; background: #22c55e; display: flex; align-items: center; justify-content: center; }
   .stat-check svg { width: 11px; height: 11px; fill: #fff; }
+  .stat-check.bad { background: #ef4444; }
   .stat-label { font-size: 13px; font-weight: 700; color: #0f172a; margin-bottom: 3px; }
   .stat-value { font-size: 11px; color: #64748b; font-weight: 500; line-height: 1.35; }
-
   .back-to-menu { background: none; border: none; color: #2563eb; font-size: 13px; font-weight: 600; cursor: pointer; padding: 6px 0; margin-bottom: 8px; }
 </style>
 </head>
@@ -236,15 +275,7 @@
 <!-- ============ MAIN ============ -->
 <div id="main">
 
-  <div class="top-bar">
-    <div class="vip-info">
-      <span class="vip-badge">V</span>
-      <span>VIP-15</span>
-      <span style="font-size:16px;">›</span>
-    </div>
-    <button class="hd-btn">HD ▾</button>
-  </div>
-
+  <!-- Status bar (jam + baterai) -->
   <div class="ebc-bar">
     <div class="ebc-version" id="ebcVersion">EBC v3.8</div>
     <div class="ebc-status">
@@ -259,6 +290,7 @@
     </div>
   </div>
 
+  <!-- URL bar -->
   <div class="url-bar">
     <div class="url-wrap" id="urlWrap">
       <svg class="sec-icon" id="secIcon" viewBox="0 0 24 24">
@@ -275,6 +307,7 @@
     <div class="search-suggest" id="suggestBox"></div>
   </div>
 
+  <!-- Nav bar (judul + selesai) -->
   <div class="nav-bar">
     <button class="nav-home" onclick="goHome()">
       <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
@@ -287,6 +320,7 @@
     <button class="btn-selesai" onclick="selesai()">Selesai</button>
   </div>
 
+  <!-- Webview -->
   <div class="webview-area">
     <iframe id="webview" src="about:blank" allow="clipboard-read; clipboard-write; fullscreen" referrerpolicy="no-referrer"></iframe>
 
@@ -299,6 +333,7 @@
     </button>
   </div>
 
+  <!-- Bottom nav -->
   <div class="bottom-nav">
     <button onclick="webBack()" id="btnBack" disabled><svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button>
     <button onclick="webForward()" id="btnForward" disabled><svg viewBox="0 0 24 24"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg></button>
@@ -308,21 +343,12 @@
 
 </div>
 
-<!-- Peek handle (mode immersive) -->
-<div id="peekHandle" onclick="exitImmersive()"></div>
-
-<!-- FAB keluar immersive -->
-<button id="immersiveExit" onclick="exitImmersive()" title="Tampilkan Toolbar">
-  <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
-</button>
-
-<!-- ============ MENU BOTTOM SHEET ============ -->
+<!-- ============ MENU ============ -->
 <div id="menuOverlay" onclick="closeMenu()"></div>
 <div id="menuSheet">
   <div class="sheet-handle"></div>
   <div class="sheet-body">
 
-    <!-- === MENU UTAMA === -->
     <div id="menuMain">
       <div class="sheet-title">Menu</div>
       <div class="menu-list">
@@ -336,15 +362,6 @@
         </button>
 
         <div class="menu-divider"></div>
-
-        <button class="menu-item" onclick="toggleImmersive()">
-          <div class="ico"><svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg></div>
-          <div class="label">
-            <div class="t">Mode Fokus (Immersive)</div>
-            <div class="s" id="immersiveState">Sembunyikan semua toolbar</div>
-          </div>
-          <div class="switch" id="swImmersive"></div>
-        </button>
 
         <button class="menu-item" onclick="toggleUrlBar()">
           <div class="ico"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.471 6.471 0 001.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 00-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.471 6.471 0 005.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div>
@@ -384,7 +401,6 @@
       </div>
     </div>
 
-    <!-- === PANEL STATISTIK === -->
     <div id="menuStats" class="stats-panel">
       <button class="back-to-menu" onclick="backToMenu()">‹ Kembali ke Menu</button>
       <div class="sheet-title">Statistik Sesi Ujian</div>
@@ -461,14 +477,12 @@ const CONFIG = {
   examTitle  : 'PSBH Semester Ganjil Kelas 9 TA 2026/2027',
   examSubtitle: 'SMPN 2 TUNTANG',
   avatar     : 'A',
-  vipLabel   : 'VIP-15',
   searchEngine: 'https://www.google.com/search?q='
 };
 document.getElementById('ebcVersion').textContent = CONFIG.ebcVersion;
 document.getElementById('examTitle').textContent = CONFIG.examTitle;
 document.getElementById('examSubtitle').textContent = CONFIG.examSubtitle;
 document.getElementById('avatar').textContent = CONFIG.avatar;
-document.querySelector('.vip-info span:nth-child(2)').textContent = CONFIG.vipLabel;
 
 /* ========== STATE ========== */
 const webview = document.getElementById('webview');
@@ -476,12 +490,7 @@ let currentUrl = '';
 let history = [];
 let histIndex = -1;
 
-/* Settings (persist) */
-const settings = {
-  showUrlBar:  true,
-  showStatusBar: true,
-  immersive:   false
-};
+const settings = { showUrlBar: true, showStatusBar: true };
 function loadSettings() {
   try {
     const s = JSON.parse(localStorage.getItem('cbt_settings') || '{}');
@@ -489,22 +498,16 @@ function loadSettings() {
   } catch(e){}
   applySettings();
 }
-function saveSettings() {
-  localStorage.setItem('cbt_settings', JSON.stringify(settings));
-}
+function saveSettings() { localStorage.setItem('cbt_settings', JSON.stringify(settings)); }
 function applySettings() {
   document.body.classList.toggle('hide-urlbar',    !settings.showUrlBar);
   document.body.classList.toggle('hide-statusbar', !settings.showStatusBar);
-  document.body.classList.toggle('immersive',      settings.immersive);
   document.getElementById('swUrl').classList.toggle('on', settings.showUrlBar);
   document.getElementById('swStatus').classList.toggle('on', settings.showStatusBar);
-  document.getElementById('swImmersive').classList.toggle('on', settings.immersive);
-  document.getElementById('immersiveState').textContent =
-    settings.immersive ? 'Semua toolbar disembunyikan' : 'Sembunyikan semua toolbar';
 }
 
 /* ========== LOGIN ========== */
-async function startExam() {
+function startExam() {
   const input = document.getElementById('urlInput').value.trim();
   if (!input) { alert('URL tidak boleh kosong!'); return; }
 
@@ -520,64 +523,11 @@ async function startExam() {
   webview.src = url;
   document.getElementById('loginPage').style.display = 'none';
   document.getElementById('main').classList.add('active');
-
   localStorage.setItem('cbt_url', url);
-
-  // AUTO FULLSCREEN (immersive mode + browser fullscreen)
-  enterFullscreen();
-  settings.immersive = true;
-  applySettings();
-  saveSettings();
 
   startSessionTimer();
   startStatsUpdater();
   initBattery();
-}
-
-/* ========== FULLSCREEN BROWSER (nyembunyiin bar browser asli) ========== */
-function enterFullscreen() {
-  const el = document.documentElement;
-  const req = el.requestFullscreen || el.webkitRequestFullscreen ||
-              el.mozRequestFullScreen || el.msRequestFullscreen;
-  if (req) {
-    req.call(el).catch(() => {
-      // Gagal (butuh user gesture) → minimal immersive mode saja
-    });
-  }
-}
-function exitFullscreen() {
-  if (document.fullscreenElement || document.webkitFullscreenElement) {
-    const exit = document.exitFullscreen || document.webkitExitFullscreen ||
-                 document.mozCancelFullScreen || document.msExitFullscreen;
-    if (exit) exit.call(document).catch(()=>{});
-  }
-}
-
-/* ========== IMMERSIVE (sembunyikan toolbar CBT) ========== */
-function toggleImmersive() {
-  settings.immersive = !settings.immersive;
-  applySettings();
-  saveSettings();
-  // Kalau immersive ON, coba fullscreen juga biar bar browser hilang
-  if (settings.immersive) enterFullscreen();
-  else exitFullscreen();
-}
-function exitImmersive() {
-  settings.immersive = false;
-  applySettings();
-  saveSettings();
-  exitFullscreen();
-  closeMenu();
-}
-function toggleUrlBar() {
-  settings.showUrlBar = !settings.showUrlBar;
-  applySettings();
-  saveSettings();
-}
-function toggleStatusBar() {
-  settings.showStatusBar = !settings.showStatusBar;
-  applySettings();
-  saveSettings();
 }
 
 /* ========== URL / SEARCH BAR ========== */
@@ -620,7 +570,6 @@ function onUrlInput() {
     sb.classList.remove('show');
   }
 }
-
 function looksLikeUrl(s) {
   s = s.trim();
   if (!s) return false;
@@ -630,7 +579,6 @@ function looksLikeUrl(s) {
   if (/^localhost(:\d+)?/i.test(s)) return true;
   return false;
 }
-
 function handleUrlEnter() {
   const val = document.getElementById('urlBar').value.trim();
   if (!val) return;
@@ -640,7 +588,6 @@ function handleUrlEnter() {
     : CONFIG.searchEngine + encodeURIComponent(val);
   navigateTo(target);
 }
-
 function navigateTo(url) {
   currentUrl = url;
   history = history.slice(0, histIndex + 1);
@@ -651,7 +598,6 @@ function navigateTo(url) {
   document.getElementById('urlBar').value = url;
   document.getElementById('urlBar').blur();
 }
-
 function goHome() {
   if (history[0]) {
     histIndex = 0;
@@ -776,6 +722,24 @@ function backToMenu() {
   document.getElementById('menuMain').style.display = 'block';
   document.getElementById('menuStats').classList.remove('show');
 }
+function toggleUrlBar() {
+  settings.showUrlBar = !settings.showUrlBar;
+  applySettings(); saveSettings();
+}
+function toggleStatusBar() {
+  settings.showStatusBar = !settings.showStatusBar;
+  applySettings(); saveSettings();
+}
+function gantiUrl() {
+  const baru = prompt('Masukkan URL ujian baru:', currentUrl);
+  if (baru && baru.trim()) {
+    let u = baru.trim();
+    if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
+    navigateTo(u);
+    localStorage.setItem('cbt_url', u);
+  }
+}
+function toggleSettings() { alert('Pengaturan (contoh)'); }
 
 /* ========== STATISTIK ========== */
 let statsInterval = null;
@@ -818,23 +782,12 @@ function selesai() {
   alert('Ujian selesai. Terima kasih!');
   logout();
 }
-
-function toggleSettings() {
-  alert('Pengaturan (contoh)');
-}
-
 function toggleFullscreen() {
-  if (!document.fullscreenElement) enterFullscreen();
-  else exitFullscreen();
+  const el = document.documentElement;
+  if (!document.fullscreenElement) el.requestFullscreen?.().catch(()=>{});
+  else document.exitFullscreen?.();
 }
-
 function logout() {
-  // KELUAR DARI FULLSCREEN dulu
-  exitFullscreen();
-  settings.immersive = false;
-  applySettings();
-  saveSettings();
-
   localStorage.removeItem('cbt_url');
   webview.src = 'about:blank';
   currentUrl = '';
@@ -881,15 +834,6 @@ setInterval(updateClock, 1000);
 document.addEventListener('click', (e) => {
   if (!e.target.closest('.url-bar')) {
     document.getElementById('suggestBox').classList.remove('show');
-  }
-});
-
-/* Deteksi keluar fullscreen manual (user tekan ESC) → matikan immersive */
-document.addEventListener('fullscreenchange', () => {
-  if (!document.fullscreenElement && settings.immersive) {
-    // User keluar dari fullscreen via ESC → keluarin dari immersive juga?
-    // Biarkan immersive tetap ON (hanya bar CBT yang hilang), atau matikan:
-    // settings.immersive = false; applySettings();
   }
 });
 </script>
