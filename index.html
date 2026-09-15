@@ -2,15 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
-
-<!-- PWA meta -->
-<link rel="manifest" href="manifest.json" />
-<meta name="theme-color" content="#2563eb" />
-<meta name="mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <title>CBT WebView</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -121,7 +113,7 @@
   .sugg-item:hover { background: #f8fafc; }
   .sugg-item svg { width: 16px; height: 16px; fill: #64748b; flex-shrink: 0; }
 
-  /* --- Nav bar (judul + selesai) --- */
+  /* --- Nav bar --- */
   .nav-bar {
     background: #f8fafc; color: #0f172a;
     display: flex; align-items: center; gap: 10px;
@@ -185,6 +177,10 @@
   }
   .bottom-nav button:disabled { opacity: 0.3; cursor: not-allowed; }
   .bottom-nav svg { width: 22px; height: 22px; fill: #475569; }
+
+  /* ============ TOGGLE HIDE (yang kemarin kelupaan) ============ */
+  body.hide-urlbar    .url-bar    { display: none !important; }
+  body.hide-statusbar .ebc-bar    { display: none !important; }
 
   /* ============ MENU ============ */
   #menuOverlay {
@@ -275,7 +271,6 @@
 <!-- ============ MAIN ============ -->
 <div id="main">
 
-  <!-- Status bar (jam + baterai) -->
   <div class="ebc-bar">
     <div class="ebc-version" id="ebcVersion">EBC v3.8</div>
     <div class="ebc-status">
@@ -290,10 +285,9 @@
     </div>
   </div>
 
-  <!-- URL bar -->
   <div class="url-bar">
     <div class="url-wrap" id="urlWrap">
-      <svg class="sec-icon" id="secIcon" viewBox="0 0 24 24">
+      <svg class="sec-icon" viewBox="0 0 24 24">
         <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
       </svg>
       <input type="text" id="urlBar" placeholder="Cari atau masukkan URL" autocomplete="off" spellcheck="false"
@@ -307,7 +301,6 @@
     <div class="search-suggest" id="suggestBox"></div>
   </div>
 
-  <!-- Nav bar (judul + selesai) -->
   <div class="nav-bar">
     <button class="nav-home" onclick="goHome()">
       <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
@@ -320,7 +313,6 @@
     <button class="btn-selesai" onclick="selesai()">Selesai</button>
   </div>
 
-  <!-- Webview -->
   <div class="webview-area">
     <iframe id="webview" src="about:blank" allow="clipboard-read; clipboard-write; fullscreen" referrerpolicy="no-referrer"></iframe>
 
@@ -333,7 +325,6 @@
     </button>
   </div>
 
-  <!-- Bottom nav -->
   <div class="bottom-nav">
     <button onclick="webBack()" id="btnBack" disabled><svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button>
     <button onclick="webForward()" id="btnForward" disabled><svg viewBox="0 0 24 24"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg></button>
